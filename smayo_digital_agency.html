@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMayo — Architecting the Digital Future</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        midnight: '#050814',
+                        surface: '#0c1026',
+                        card: '#121836',
+                        neonBlue: '#00f2fe',
+                        neonCyan: '#4facfe',
+                        neonPurple: '#7f00ff',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js for 3D Background Simulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050814;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e295c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f2fe;
+        }
+
+        /* Custom glow effects */
+        .glow-blue {
+            text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+        }
+        .box-glow {
+            box-shadow: 0 0 40px -10px rgba(0, 242, 254, 0.15);
+        }
+        .box-glow-hover:hover {
+            box-shadow: 0 0 50px rgba(0, 242, 254, 0.3);
+            border-color: rgba(0, 242, 254, 0.4);
+        }
+
+        /* Custom cursor */
+        .custom-cursor {
+            pointer-events: none;
+            position: fixed;
+            width: 32px;
+            height: 32px;
+            border: 2px solid rgba(0, 242, 254, 0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            z-index: 9999;
+        }
+        .custom-cursor-dot {
+            pointer-events: none;
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background-color: #00f2fe;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+        }
+
+        /* Background Canvas */
+        #webgl-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+<style>
+body{background:#050814 url(smayo-assets/07-backgrounds/webp-web/bg-hero-mesh.webp) top center/100% auto no-repeat;}
+.reveal,[class*=opacity-0]{opacity:1!important}
+.hero-art{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:min(980px,110vw);max-width:none;opacity:.5;pointer-events:none;z-index:0;mix-blend-mode:screen}
+.svc-art{position:absolute;pointer-events:none;filter:drop-shadow(0 20px 40px rgba(0,160,255,.25))}
+</style></head>
+<body class="bg-midnight text-slate-100 font-sans antialiased selection:bg-neonBlue selection:text-midnight overflow-x-hidden">
+
+    <!-- WebGL Background Canvas -->
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor hidden md:block" id="cursor"></div>
+    <div class="custom-cursor-dot hidden md:block" id="cursor-dot"></div>
+
+    <!-- Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-midnight/80 border-b border-slate-800/60 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-neonBlue to-neonPurple flex items-center justify-center font-black text-xl text-midnight shadow-lg shadow-neonBlue/20 group-hover:scale-105 transition-transform">
+                    S
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-white via-slate-200 to-neonBlue bg-clip-text text-transparent">SMAYO</span>
+                    <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Technologies</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#about" class="hover:text-neonBlue transition-colors">About</a>
+                <a href="#services" class="hover:text-neonBlue transition-colors">Services</a>
+                <a href="#solutions" class="hover:text-neonBlue transition-colors">Solutions</a>
+                <a href="#expertise" class="hover:text-neonBlue transition-colors">Expertise</a>
+                <a href="#contact" class="hover:text-neonBlue transition-colors">Contact</a>
+            </nav>
+
+            <!-- CTA Button -->
+            <div class="hidden md:flex items-center gap-4">
+                <a href="#contact" class="relative group overflow-hidden rounded-full p-[1px] focus:outline-none">
+                    <span class="absolute inset-0 bg-gradient-to-r from-neonBlue via-neonCyan to-neonPurple animate-pulse"></span>
+                    <span class="relative px-6 py-2.5 rounded-full bg-midnight transition-all duration-300 group-hover:bg-opacity-0 flex items-center gap-2 text-sm font-semibold text-white">
+                        <span>Let's Talk</span>
+                        <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                    </span>
+                </a>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button id="menu-btn" class="md:hidden text-2xl text-slate-200 focus:outline-none">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-20 left-0 w-full bg-midnight/95 backdrop-blur-2xl border-b border-slate-800 p-6 flex flex-col gap-4 text-center">
+            <a href="#about" class="mobile-link text-lg font-medium py-2 hover:text-neonBlue">About</a>
+            <a href="#services" class="mobile-link text-lg font-medium py-2 hover:text-neonBlue">Services</a>
+            <a href="#solutions" class="mobile-link text-lg font-medium py-2 hover:text-neonBlue">Solutions</a>
+            <a href="#expertise" class="mobile-link text-lg font-medium py-2 hover:text-neonBlue">Expertise</a>
+            <a href="#contact" class="mobile-link text-lg font-medium py-2 hover:text-neonBlue">Contact</a>
+            <a href="#contact" class="mobile-link mt-2 w-full py-3 rounded-full bg-gradient-to-r from-neonBlue to-neonPurple text-midnight font-bold">Let's Talk</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center pt-28 pb-20 px-6 overflow-hidden"><img class="hero-art" src="smayo-assets/01-hero/webp-web/hero-core.webp"><img style="position:absolute;left:0;bottom:0;width:100%;opacity:.55;pointer-events:none;-webkit-mask-image:linear-gradient(to top,#000 40%,transparent);mask-image:linear-gradient(to top,#000 40%,transparent)" src="smayo-assets/07-backgrounds/webp-web/bg-perspective-grid.webp"><img style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.6;pointer-events:none;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)" src="smayo-assets/07-backgrounds/webp-web/bg-particles.webp">
+        <div class="max-w-6xl mx-auto text-center z-10 flex flex-col items-center">
+            
+            <!-- Sleek Glowing Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface/80 border border-neonBlue/30 backdrop-blur-md mb-8 animate-bounce">
+                <span class="w-2 h-2 rounded-full bg-neonBlue animate-ping"></span>
+                <span class="text-xs font-semibold tracking-wider uppercase text-neonBlue">SMayo Technologies • Next-Gen IT & Software</span>
+            </div>
+
+            <!-- Oversized Headline -->
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-8 max-w-5xl">
+                Architecting the <span class="bg-gradient-to-r from-neonBlue via-neonCyan to-neonPurple bg-clip-text text-transparent glow-blue">Digital Future</span>
+            </h1>
+
+            <!-- Supporting Description -->
+            <p class="text-lg md:text-xl text-slate-300 max-w-2xl mb-12 font-light leading-relaxed">
+                We engineer bespoke software systems, cloud-native infrastructures, and transformative digital platforms for forward-thinking global enterprises.
+            </p>
+
+            <!-- Call to Actions -->
+            <div class="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
+                <a href="#contact" class="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-r from-neonBlue to-neonCyan text-midnight font-bold text-base shadow-lg shadow-neonBlue/30 hover:scale-105 transition-all flex items-center justify-center gap-3">
+                    <span>Start Your Project</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <a href="#services" class="w-full sm:w-auto px-8 py-4 rounded-full bg-surface/80 hover:bg-surface border border-slate-700/60 text-white font-semibold text-base backdrop-blur-md transition-all flex items-center justify-center gap-3">
+                    <span>Explore Services</span>
+                    <i class="fa-solid fa-compass text-neonBlue"></i>
+                </a>
+            </div>
+
+            <!-- Floating Metric Pills -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 w-full max-w-4xl border-t border-slate-800/80 pt-10">
+                <div class="flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl font-extrabold text-white">99.9%</span>
+                    <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider">System Uptime</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl font-extrabold text-neonBlue">250+</span>
+                    <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Projects Delivered</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl font-extrabold text-white">15+</span>
+                    <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Global Markets</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl font-extrabold text-neonCyan">24/7</span>
+                    <span class="text-xs text-slate-400 mt-1 uppercase tracking-wider">Expert Support</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- About SMayo -->
+    <section id="about" class="py-28 px-6 relative bg-gradient-to-b from-midnight/80 via-surface/90 to-midnight/80"><img src="smayo-assets/07-backgrounds/webp-web/bg-ambient-glow.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;pointer-events:none">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+                
+                <!-- Left Editorial Text -->
+                <div class="lg:col-span-6 flex flex-col">
+                    <div class="inline-flex items-center gap-2 text-neonBlue text-sm font-bold uppercase tracking-widest mb-4">
+                        <i class="fa-solid fa-fingerprint"></i>
+                        <span>About SMayo</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-8 leading-tight">
+                        Pioneering Digital Excellence Through Smart Innovation.
+                    </h2>
+                    <p class="text-slate-300 text-lg leading-relaxed mb-6 font-light">
+                        At SMayo, we believe that software is more than lines of code—it is the foundational architecture of modern business success. We bridge the gap between complex technical challenges and intuitive, high-performance digital solutions.
+                    </p>
+                    <p class="text-slate-400 text-base leading-relaxed mb-8">
+                        Our elite team of software architects, engineers, and UX visionaries combine cutting-edge tech stacks with meticulous craftsmanship to build robust platforms that scale seamlessly with your enterprise.
+                    </p>
+                    
+                    <div class="flex items-center gap-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-neonBlue/10 border border-neonBlue/30 flex items-center justify-center text-neonBlue text-xl">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Enterprise Grade</h4>
+                                <p class="text-xs text-slate-400">Military-grade security standards</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-neonCyan/10 border border-neonCyan/30 flex items-center justify-center text-neonCyan text-xl">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Rapid Delivery</h4>
+                                <p class="text-xs text-slate-400">Agile sprints & fast time-to-market</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Visual Showcase Card -->
+                <div class="lg:col-span-6 relative"><img src="smayo-assets/02-about/webp-web/about-tower.webp" style="position:absolute;z-index:20;width:330px;right:-30px;top:-205px;width:300px;pointer-events:none;filter:drop-shadow(0 30px 50px rgba(0,180,255,.3))">
+                    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-neonBlue via-neonPurple to-neonCyan opacity-30 blur-xl"></div>
+                    <div class="relative rounded-3xl bg-card border border-slate-800 p-8 md:p-10 shadow-2xl">
+                        <div class="flex items-center justify-between mb-8 pb-6 border-b border-slate-800">
+                            <div class="flex items-center gap-3">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            </div>
+                            <span class="text-xs font-mono text-slate-400">smayo-core-v2.5.ts</span>
+                        </div>
+                        <div class="space-y-4 font-mono text-sm">
+                            <p class="text-slate-400">// SMayo Core Engine Architecture</p>
+                            <p><span class="text-neonPurple">import</span> { <span class="text-neonBlue">EnterpriseCloud</span>, <span class="text-neonBlue">AIAutomation</span> } <span class="text-neonPurple">from</span> <span class="text-green-400">'@smayo/core'</span>;</p>
+                            <p class="text-slate-300">const enterprise = <span class="text-neonPurple">new</span> <span class="text-neonBlue">EnterpriseCloud</span>({</p>
+                            <p class="pl-4">scalability: <span class="text-orange-400">'infinite'</span>,</p>
+                            <p class="pl-4">security: <span class="text-orange-400">'zero-trust'</span>,</p>
+                            <p class="pl-4">latency: <span class="text-orange-400">'&lt; 5ms'</span></p>
+                            <p class="text-slate-300">});</p>
+                            <p class="pt-2 text-neonCyan">enterprise.initializeDigitalTransformation();</p>
+                        </div>
+                        <div class="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-neonBlue"></i>
+                                <span class="text-xs text-slate-300 font-medium">All systems fully operational</span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full bg-neonBlue/10 text-neonBlue text-xs font-bold">Live Status</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Our Services (Bento Grid) -->
+    <section id="services" class="py-28 px-6 relative overflow-hidden"><img src="smayo-assets/07-backgrounds/webp-web/bg-ambient-glow.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;pointer-events:none">
+        <div class="max-w-7xl mx-auto relative z-10">
+            
+            <div class="text-center max-w-3xl mx-auto mb-20">
+                <span class="text-neonBlue text-sm font-bold uppercase tracking-widest mb-3 block">Our Core Capabilities</span>
+                <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-6">Engineered for Maximum Impact</h2>
+                <p class="text-slate-400 text-base md:text-lg">Discover our luxury suite of IT services and software solutions designed to accelerate your competitive advantage.</p>
+            </div>
+
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                
+                <!-- Service 1: IT Consulting (Span 2) -->
+                <div class="md:col-span-2 rounded-3xl bg-card border border-slate-800/80 p-8 md:p-10 flex flex-col justify-between box-glow-hover transition-all duration-300 group relative overflow-hidden"><img class="svc-art" src="smayo-assets/03-services/webp-web/service-consulting.webp" style="width:220px;right:10px;top:-10px">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-neonBlue/20 to-neonCyan/20 border border-neonBlue/40 flex items-center justify-center text-neonBlue text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">IT Consulting & Strategy</h3>
+                        <p class="text-slate-400 text-sm md:text-base leading-relaxed">
+                            Strategic technology roadmapping, technical audits, and digital maturity assessments tailored to align your IT infrastructure with long-term business goals.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-2 text-neonBlue text-sm font-semibold group-hover:translate-x-2 transition-transform cursor-pointer">
+                        <span>Learn more</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Service 2: Custom Software Development (Span 2) -->
+                <div class="md:col-span-2 rounded-3xl bg-card border border-slate-800/80 p-8 md:p-10 flex flex-col justify-between box-glow-hover transition-all duration-300 group relative overflow-hidden"><img class="svc-art" src="smayo-assets/03-services/webp-web/service-software.webp" style="width:220px;right:10px;top:-10px">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-neonPurple/20 to-neonBlue/20 border border-neonPurple/40 flex items-center justify-center text-neonPurple text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-code"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Custom Software Development</h3>
+                        <p class="text-slate-400 text-sm md:text-base leading-relaxed">
+                            Bespoke applications engineered from scratch using clean code principles, microservices architecture, and modern scalable frameworks.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-2 text-neonPurple text-sm font-semibold group-hover:translate-x-2 transition-transform cursor-pointer">
+                        <span>Learn more</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Service 3: Web & Cloud Platforms (Span 1 or 2) -->
+                <div class="md:col-span-1 lg:col-span-1 rounded-3xl bg-card border border-slate-800/80 p-8 flex flex-col justify-between box-glow-hover transition-all duration-300 group relative overflow-hidden"><img class="svc-art" src="smayo-assets/03-services/webp-web/service-web.webp" style="width:130px;right:-6px;top:4px">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-neonCyan/10 border border-neonCyan/30 flex items-center justify-center text-neonCyan text-xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-cloud"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Web & Cloud Platforms</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            High-performance web applications and resilient multi-cloud architectures.
+                        </p>
+                    </div>
+                    <div class="mt-6 flex items-center gap-2 text-neonCyan text-xs font-semibold group-hover:translate-x-1 transition-transform cursor-pointer">
+                        <span>Explore</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Service 4: Digital Transformation (Span 1 or 2) -->
+                <div class="md:col-span-1 lg:col-span-1 rounded-3xl bg-card border border-slate-800/80 p-8 flex flex-col justify-between box-glow-hover transition-all duration-300 group relative overflow-hidden"><img class="svc-art" src="smayo-assets/03-services/webp-web/service-transformation.webp" style="width:130px;right:-6px;top:4px">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-neonBlue/10 border border-neonBlue/30 flex items-center justify-center text-neonBlue text-xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-white">Digital Transformation</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Modernizing legacy workflows with automated pipelines and smart digital systems.
+                        </p>
+                    </div>
+                    <div class="mt-6 flex items-center gap-2 text-neonBlue text-xs font-semibold group-hover:translate-x-1 transition-transform cursor-pointer">
+                        <span>Explore</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- Service 5: Enterprise Systems (Span 2) -->
+                <div class="md:col-span-2 lg:col-span-2 rounded-3xl bg-card border border-slate-800/80 p-8 md:p-10 flex flex-col justify-between box-glow-hover transition-all duration-300 group relative overflow-hidden"><img class="svc-art" src="smayo-assets/03-services/webp-web/service-technology.webp" style="width:220px;right:10px;top:-10px">
+                    <div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-neonCyan/20 to-neonPurple/20 border border-neonCyan/40 flex items-center justify-center text-neonCyan text-2xl mb-6 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-network-wired"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4 text-white">Enterprise Systems Integration</h3>
+                        <p class="text-slate-400 text-sm md:text-base leading-relaxed">
+                            Seamless integration of disparate enterprise software, ERPs, CRM systems, and real-time data streaming pipelines with uncompromising security.
+                        </p>
+                    </div>
+                    <div class="mt-8 flex items-center gap-2 text-neonCyan text-sm font-semibold group-hover:translate-x-2 transition-transform cursor-pointer">
+                        <span>Learn more</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Software Solutions (Interactive Showcase) -->
+    <section id="solutions" class="py-28 px-6 bg-surface/50 border-y border-slate-800/60">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                    <span class="text-neonBlue text-sm font-bold uppercase tracking-widest mb-3 block">Tailored Solutions</span>
+                    <h2 class="text-4xl md:text-5xl font-black tracking-tight">Enterprise Software Excellence</h2>
+                </div>
+                <div class="flex items-center gap-2 bg-midnight p-1.5 rounded-full border border-slate-800" id="tab-buttons">
+                    <button onclick="switchTab('automation')" class="tab-btn px-6 py-2.5 rounded-full text-sm font-semibold transition-all bg-gradient-to-r from-neonBlue to-neonCyan text-midnight shadow-md" data-target="automation">Automation</button>
+                    <button onclick="switchTab('infrastructure')" class="tab-btn px-6 py-2.5 rounded-full text-sm font-semibold transition-all text-slate-400 hover:text-white" data-target="infrastructure">Infrastructure</button>
+                    <button onclick="switchTab('security')" class="tab-btn px-6 py-2.5 rounded-full text-sm font-semibold transition-all text-slate-400 hover:text-white" data-target="security">Security</button>
+                </div>
+            </div>
+
+            <!-- Tab Content Container -->
+            <div class="relative rounded-3xl bg-card border border-slate-800 p-8 md:p-14 overflow-hidden">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-neonBlue/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Tab 1: Automation -->
+                <div id="tab-automation" class="solution-tab grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-6 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonBlue/10 text-neonBlue text-xs font-bold">
+                            <i class="fa-solid fa-bolt"></i> Intelligent Business Automation
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-white">Streamline Operations with Autonomous Workflows</h3>
+                        <p class="text-slate-300 text-base leading-relaxed">
+                            Eliminate manual friction and reduce operational overhead by deploying smart business automation systems powered by event-driven microservices and machine learning models.
+                        </p>
+                        <ul class="space-y-3 text-slate-300 text-sm">
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonBlue"></i> Real-time data synchronization across all enterprise nodes</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonBlue"></i> Automated decision-making algorithms & smart alerts</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonBlue"></i> 40% average reduction in operational processing time</li>
+                        </ul>
+                    </div>
+                    <div class="lg:col-span-6 bg-midnight/80 rounded-2xl border border-slate-800 p-6 font-mono text-xs text-slate-300 space-y-3"><img src="smayo-assets/04-solutions/webp-web/solution-automation.webp" style="width:100%;height:230px;object-fit:contain;margin:-14px 0 6px;filter:drop-shadow(0 20px 40px rgba(0,160,255,.25))">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                            <span class="text-neonBlue font-bold">automation_pipeline.json</span>
+                            <span class="text-green-400">● Active</span>
+                        </div>
+                        <p class="text-slate-400">{</p>
+                        <p class="pl-4">"trigger": <span class="text-orange-400">"enterprise_event_stream"</span>,</p>
+                        <p class="pl-4">"latency_target_ms": <span class="text-neonBlue">12</span>,</p>
+                        <p class="pl-4">"ai_optimisation": <span class="text-purple-400">true</span>,</p>
+                        <p class="pl-4">"steps": [</p>
+                        <p class="pl-8">"ingest_payload",</p>
+                        <p class="pl-8">"validate_zero_trust",</p>
+                        <p class="pl-8">"dispatch_autonomous_agents"</p>
+                        <p class="pl-4">]</p>
+                        <p class="text-slate-400">}</p>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Infrastructure -->
+                <div id="tab-infrastructure" class="solution-tab hidden grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-6 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonCyan/10 text-neonCyan text-xs font-bold">
+                            <i class="fa-solid fa-cloud"></i> Scalable Cloud Infrastructure
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-white">Resilient, Multi-Cloud Architectures</h3>
+                        <p class="text-slate-300 text-base leading-relaxed">
+                            Built for infinite scale and absolute resilience. Our cloud solutions leverage Kubernetes, serverless compute, and geo-distributed databases to guarantee 99.99% uptime.
+                        </p>
+                        <ul class="space-y-3 text-slate-300 text-sm">
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonCyan"></i> Auto-scaling clusters reacting instantly to traffic surges</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonCyan"></i> Zero-downtime rolling deployments and automated backups</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonCyan"></i> Optimized cloud cost governance and resource allocation</li>
+                        </ul>
+                    </div>
+                    <div class="lg:col-span-6 bg-midnight/80 rounded-2xl border border-slate-800 p-6 font-mono text-xs text-slate-300 space-y-3"><img src="smayo-assets/04-solutions/webp-web/solution-infrastructure.webp" style="width:100%;height:230px;object-fit:contain;margin:-14px 0 6px;filter:drop-shadow(0 20px 40px rgba(0,160,255,.25))">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                            <span class="text-neonCyan font-bold">cluster_status_metrics</span>
+                            <span class="text-green-400">● Healthy</span>
+                        </div>
+                        <p class="text-slate-400">cluster_nodes_active: <span class="text-neonBlue">128</span></p>
+                        <p class="text-slate-400">cpu_utilization_avg: <span class="text-green-400">24.6%</span></p>
+                        <p class="text-slate-400">memory_allocated: <span class="text-orange-400">512 GB / 2 TB</span></p>
+                        <p class="text-slate-400">global_load_balancer: <span class="text-neonCyan">ONLINE</span></p>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Security -->
+                <div id="tab-security" class="solution-tab hidden grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-6 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonPurple/10 text-neonPurple text-xs font-bold">
+                            <i class="fa-solid fa-shield-halved"></i> Enterprise Security & Compliance
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-white">Zero-Trust Security Frameworks</h3>
+                        <p class="text-slate-300 text-base leading-relaxed">
+                            Safeguard your critical digital assets with advanced encryption, automated threat detection, and comprehensive compliance protocols (SOC2, GDPR, HIPAA).
+                        </p>
+                        <ul class="space-y-3 text-slate-300 text-sm">
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonPurple"></i> End-to-end encryption at rest and in transit</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonPurple"></i> Continuous vulnerability scanning and penetration testing</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-neonPurple"></i> Role-based access control (RBAC) with biometric MFA</li>
+                        </ul>
+                    </div>
+                    <div class="lg:col-span-6 bg-midnight/80 rounded-2xl border border-slate-800 p-6 font-mono text-xs text-slate-300 space-y-3"><img src="smayo-assets/04-solutions/webp-web/solution-security.webp" style="width:100%;height:230px;object-fit:contain;margin:-14px 0 6px;filter:drop-shadow(0 20px 40px rgba(0,160,255,.25))">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                            <span class="text-neonPurple font-bold">security_audit_log</span>
+                            <span class="text-green-400">● Secure</span>
+                        </div>
+                        <p class="text-slate-400">threats_detected_24h: <span class="text-green-400">0</span></p>
+                        <p class="text-slate-400">encryption_standard: <span class="text-neonBlue">AES-256-GCM</span></p>
+                        <p class="text-slate-400">firewall_status: <span class="text-green-400">ENABLED (Strict Mode)</span></p>
+                        <p class="text-slate-400">compliance_score: <span class="text-neonCyan">100%</span></p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Why Choose SMayo (Feature Grid) -->
+    <section class="py-28 px-6 relative">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="text-center max-w-3xl mx-auto mb-20">
+                <span class="text-neonBlue text-sm font-bold uppercase tracking-widest mb-3 block">Why SMayo</span>
+                <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-6">Built for Elite Performance</h2>
+                <p class="text-slate-400 text-base md:text-lg">We combine technical brilliance with unwavering reliability to deliver transformative outcomes.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+                <!-- Feature 1 -->
+                <div class="rounded-3xl bg-card border border-slate-800 p-8 hover:border-neonBlue/50 transition-colors group">
+                    <div class="w-14 h-14 rounded-2xl bg-neonBlue/10 border border-neonBlue/30 flex items-center justify-center text-neonBlue text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Radical Innovation</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Pioneering forward-thinking tech stacks that keep your business ahead of industry curves.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="rounded-3xl bg-card border border-slate-800 p-8 hover:border-neonCyan/50 transition-colors group">
+                    <div class="w-14 h-14 rounded-2xl bg-neonCyan/10 border border-neonCyan/30 flex items-center justify-center text-neonCyan text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Uncompromising Security</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Robust zero-trust architectures protecting your enterprise data against evolving cyber threats.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="rounded-3xl bg-card border border-slate-800 p-8 hover:border-neonPurple/50 transition-colors group">
+                    <div class="w-14 h-14 rounded-2xl bg-neonPurple/10 border border-neonPurple/30 flex items-center justify-center text-neonPurple text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Infinite Scalability</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Cloud-native software engineered to expand effortlessly alongside your rapid growth.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="rounded-3xl bg-card border border-slate-800 p-8 hover:border-neonBlue/50 transition-colors group">
+                    <div class="w-14 h-14 rounded-2xl bg-neonBlue/10 border border-neonBlue/30 flex items-center justify-center text-neonBlue text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-white">Elite Engineering</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        World-class developers and architects dedicated to pristine code and seamless user experiences.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Our Expertise (Tech Stack Matrix) -->
+    <section id="expertise" class="py-28 px-6 bg-surface/50 border-t border-slate-800/60 relative overflow-hidden"><img src="smayo-assets/05-expertise/webp-web/expertise-network.webp" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:130%;max-width:none;opacity:.55;pointer-events:none">
+        <div class="max-w-7xl mx-auto text-center relative z-10">
+            
+            <span class="text-neonBlue text-sm font-bold uppercase tracking-widest mb-3 block">Tech Stack Matrix</span>
+            <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-6">Powered by Modern Technologies</h2>
+            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-16">We harness the world's most advanced frameworks and cloud ecosystems to build elite digital solutions.</p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                
+                <div class="rounded-2xl bg-card border border-slate-800 p-6 flex flex-col items-center justify-center gap-3 hover:border-neonBlue/40 transition-all hover:scale-105">
+                    <i class="fa-brands fa-react text-4xl text-cyan-400"></i>
+                    <span class="font-semibold text-sm text-white">React / Next.js</span>
+                </div>
+
+                <div class="rounded-2xl bg-card border border-slate-800 p-6 flex flex-col items-center justify-center gap-3 hover:border-neonBlue/40 transition-all hover:scale-105">
+                    <i class="fa-brands fa-node text-4xl text-green-500"></i>
+                    <span class="font-semibold text-sm text-white">Node.js</span>
+                </div>
+
+                <div class="rounded-2xl bg-card border border-slate-800 p-6 flex flex-col items-center justify-center gap-3 hover:border-neonBlue/40 transition-all hover:scale-105">
+                    <i class="fa-brands fa-aws text-4xl text-orange-400"></i>
+                    <span class="font-semibold text-sm text-white">AWS Cloud</span>
+                </div>
+
+                <div class="rounded-2xl bg-card border border-slate-800 p-6 flex flex-col items-center justify-center gap-3 hover:border-neonBlue/40 transition-all hover:scale-105">
+                    <i class="fa-solid fa-cubes text-4xl text-blue-500"></i>
+                    <span class="font-semibold text-sm text-white">Kubernetes</span>
+                </div>
+
+                <div class="rounded-2xl bg-card border border-slate-800 p-6 flex flex-col items-center justify-center gap-3 hover:border-neonBlue/40 transition-all hover:scale-105">
+                    <i class="fa-brands fa-python text-4xl text-yellow-400"></i>
+                    <span class="font-semibold text-sm text-white">Python & AI</span>
+                </div>
+
+                <div class="rounded-2xl bg-card border border-slate-800 p-6 flex flex-col items-center justify-center gap-3 hover:border-neonBlue/40 transition-all hover:scale-105">
+                    <i class="fa-solid fa-database text-4xl text-purple-400"></i>
+                    <span class="font-semibold text-sm text-white">PostgreSQL</span>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-28 px-6 relative overflow-hidden"><img src="smayo-assets/06-contact/webp-web/contact-orb.webp" style="position:absolute;right:-330px;bottom:-330px;width:900px;max-width:none;opacity:.35;pointer-events:none"><img src="smayo-assets/07-backgrounds/webp-web/bg-ambient-glow.webp" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.6;pointer-events:none">
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+                
+                <!-- Left Details -->
+                <div class="lg:col-span-5 space-y-8">
+                    <div>
+                        <span class="text-neonBlue text-sm font-bold uppercase tracking-widest mb-3 block">Get In Touch</span>
+                        <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-6">Let's Build Something Extraordinary Together.</h2>
+                        <p class="text-slate-300 text-base leading-relaxed">
+                            Ready to transform your IT infrastructure or build your next flagship software product? Drop us a message and our engineering leadership will connect with you within 24 hours.
+                        </p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-neonBlue/10 border border-neonBlue/30 flex items-center justify-center text-neonBlue text-lg">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 uppercase tracking-wider">Direct Email</span>
+                                <h4 class="font-bold text-white text-base">contact@smayo.tech</h4>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-neonCyan/10 border border-neonCyan/30 flex items-center justify-center text-neonCyan text-lg">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 uppercase tracking-wider">Global Headquarters</span>
+                                <h4 class="font-bold text-white text-base">+1 (800) 555-SMAYO</h4>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-neonPurple/10 border border-neonPurple/30 flex items-center justify-center text-neonPurple text-lg">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 uppercase tracking-wider">Locations</span>
+                                <h4 class="font-bold text-white text-base">San Francisco • Zurich • Tokyo</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Inquiry Form -->
+                <div class="lg:col-span-7">
+                    <div class="rounded-3xl bg-card border border-slate-800 p-8 md:p-12 relative shadow-2xl">
+                        <div class="absolute top-0 right-0 w-72 h-72 bg-neonPurple/10 rounded-full blur-3xl pointer-events-none"></div>
+                        
+                        <form id="inquiry-form" onsubmit="handleFormSubmit(event)" class="space-y-6 relative z-10">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Your Name</label>
+                                    <input type="text" required placeholder="Alex Mercer" class="w-full px-5 py-4 rounded-xl bg-midnight border border-slate-800 text-white placeholder-slate-600 focus:border-neonBlue focus:outline-none transition-colors text-sm">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Work Email</label>
+                                    <input type="email" required placeholder="alex@company.com" class="w-full px-5 py-4 rounded-xl bg-midnight border border-slate-800 text-white placeholder-slate-600 focus:border-neonBlue focus:outline-none transition-colors text-sm">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Service Required</label>
+                                <select class="w-full px-5 py-4 rounded-xl bg-midnight border border-slate-800 text-white focus:border-neonBlue focus:outline-none transition-colors text-sm">
+                                    <option>Custom Software Development</option>
+                                    <option>IT Consulting & Strategy</option>
+                                    <option>Web & Cloud Platforms</option>
+                                    <option>Digital Transformation</option>
+                                    <option>Enterprise Systems Integration</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-300">Project Details</label>
+                                <textarea rows="4" required placeholder="Tell us about your project scope, goals, and timeline..." class="w-full px-5 py-4 rounded-xl bg-midnight border border-slate-800 text-white placeholder-slate-600 focus:border-neonBlue focus:outline-none transition-colors text-sm resize-none"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-neonBlue via-neonCyan to-neonPurple text-midnight font-bold text-base shadow-lg shadow-neonBlue/20 hover:scale-[1.02] transition-transform">
+                                Send Inquiry
+                            </button>
+                        </form>
+
+                        <!-- Success Message Box -->
+                        <div id="success-box" class="hidden absolute inset-0 bg-card rounded-3xl flex flex-col items-center justify-center text-center p-8 z-20">
+                            <div class="w-16 h-16 rounded-full bg-neonBlue/20 border border-neonBlue flex items-center justify-center text-neonBlue text-3xl mb-4 animate-bounce">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-2">Message Received!</h3>
+                            <p class="text-slate-400 text-sm max-w-sm mb-6">Thank you for reaching out to SMayo. Our engineering team will review your inquiry and contact you shortly.</p>
+                            <button onclick="resetForm()" class="px-6 py-2.5 rounded-full bg-midnight border border-slate-800 text-white text-xs font-bold hover:bg-slate-800 transition-colors">Send Another Message</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-midnight border-t border-slate-800 py-16 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+            
+            <div class="md:col-span-5 space-y-6">
+                <a href="#" class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-neonBlue to-neonPurple flex items-center justify-center font-black text-xl text-midnight">
+                        S
+                    </div>
+                    <span class="text-xl font-extrabold tracking-wider text-white">SMAYO</span>
+                </a>
+                <p class="text-slate-400 text-sm leading-relaxed max-w-sm">
+                    Architecting elite software solutions and cutting-edge IT systems for forward-thinking enterprises worldwide.
+                </p>
+                <div class="flex items-center gap-4 text-slate-400 text-lg">
+                    <a href="#" class="hover:text-neonBlue transition-colors"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="#" class="hover:text-neonBlue transition-colors"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="hover:text-neonBlue transition-colors"><i class="fa-brands fa-github"></i></a>
+                    <a href="#" class="hover:text-neonBlue transition-colors"><i class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-4">
+                <h4 class="font-bold text-white text-sm uppercase tracking-wider">Navigation</h4>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="#about" class="hover:text-neonBlue transition-colors">About Us</a></li>
+                    <li><a href="#services" class="hover:text-neonBlue transition-colors">Services</a></li>
+                    <li><a href="#solutions" class="hover:text-neonBlue transition-colors">Solutions</a></li>
+                    <li><a href="#expertise" class="hover:text-neonBlue transition-colors">Expertise</a></li>
+                </ul>
+            </div>
+
+            <div class="md:col-span-2 space-y-4">
+                <h4 class="font-bold text-white text-sm uppercase tracking-wider">Services</h4>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><a href="#services" class="hover:text-neonBlue transition-colors">IT Consulting</a></li>
+                    <li><a href="#services" class="hover:text-neonBlue transition-colors">Custom Software</a></li>
+                    <li><a href="#services" class="hover:text-neonBlue transition-colors">Cloud Platforms</a></li>
+                    <li><a href="#services" class="hover:text-neonBlue transition-colors">Enterprise Systems</a></li>
+                </ul>
+            </div>
+
+            <div class="md:col-span-3 space-y-4">
+                <h4 class="font-bold text-white text-sm uppercase tracking-wider">Newsletter</h4>
+                <p class="text-xs text-slate-400">Subscribe to our tech digest for elite software insights.</p>
+                <div class="flex items-center gap-2">
+                    <input type="email" placeholder="Enter email" class="w-full px-4 py-2.5 rounded-xl bg-surface border border-slate-800 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-neonBlue">
+                    <button class="px-4 py-2.5 rounded-xl bg-neonBlue text-midnight font-bold text-xs hover:bg-neonCyan transition-colors">Join</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="max-w-7xl mx-auto pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+            <p>&copy; 2026 SMayo Technologies Inc. All rights reserved.</p>
+            <div class="flex items-center gap-6">
+                <a href="#" class="hover:text-slate-400 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-slate-400 transition-colors">Terms of Service</a>
+                <a href="#" class="hover:text-slate-400 transition-colors">Security Statement</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Custom Cursor Logic
+        const cursor = document.getElementById('cursor');
+        const cursorDot = document.getElementById('cursor-dot');
+
+        window.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorDot.style.left = e.clientX + 'px';
+            cursorDot.style.top = e.clientY + 'px';
+        });
+
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Tab Switching Logic for Solutions Section
+        function switchTab(targetTab) {
+            const tabs = document.querySelectorAll('.solution-tab');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            const activeTab = document.getElementById('tab-' + targetTab);
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+            }
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-neonBlue', 'to-neonCyan', 'text-midnight', 'shadow-md');
+                btn.classList.add('text-slate-400');
+                if (btn.getAttribute('data-target') === targetTab) {
+                    btn.classList.add('bg-gradient-to-r', 'from-neonBlue', 'to-neonCyan', 'text-midnight', 'shadow-md');
+                    btn.classList.remove('text-slate-400');
+                }
+            });
+        }
+
+        // Form Submission Handling (No alert used, custom success box)
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const successBox = document.getElementById('success-box');
+            successBox.classList.remove('hidden');
+        }
+
+        function resetForm() {
+            const successBox = document.getElementById('success-box');
+            const form = document.getElementById('inquiry-form');
+            form.reset();
+            successBox.classList.add('hidden');
+        }
+
+        // Three.js 3D Background Mesh Animation
+        window.addEventListener('load', () => {
+            const canvas = document.getElementById('webgl-bg');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Create abstract particle network
+            const particleCount = 700;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 30;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.05,
+                color: 0x00f2fe,
+                transparent: true,
+                opacity: 0.6,
+            });
+
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            // Add connecting lines or floating wireframe mesh
+            const torusGeometry = new THREE.TorusKnotGeometry(6, 1.8, 120, 20);
+            const torusMaterial = new THREE.MeshBasicMaterial({
+                color: 0x7f00ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            });
+            const torusKnot = new THREE.Mesh(torusGeometry, torusMaterial);
+            scene.add(torusKnot);
+
+            camera.position.z = 15;
+
+            // Mouse interaction variables
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.001;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.001;
+            });
+
+            // Window resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                targetX += (mouseX - targetX) * 0.05;
+                targetY += (mouseY - targetY) * 0.05;
+
+                particles.rotation.x += 0.001 + targetY * 0.2;
+                particles.rotation.y += 0.0015 + targetX * 0.2;
+
+                torusKnot.rotation.x += 0.002;
+                torusKnot.rotation.y += 0.003;
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+        });
+    </script>
+</body>
+</html>
